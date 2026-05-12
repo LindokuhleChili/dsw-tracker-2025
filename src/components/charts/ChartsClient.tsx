@@ -1,0 +1,175 @@
+'use client'
+import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase'
+import { Task, Stream } from '@/types'
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+  PieChart, Pie, Cell, LineChart, Line
+} from 'recharts'
+
+interface Props { initialTasks: Task[]; streams: Stream[] }
+
+const COLORS = ['#6366f1','#f59e0b','#10b981','#f43f5e','#8b5cf6']
+const STATUS_COLORS = { done: '#10b981', in_progress: '#f59e0b', todo: '#e5e7eb' }
+
+export default function ChartsClient({ initialTasks, streams }: Props) {
+  const [tasks, setTasks] = useState<Task[]>(initialTasks)
+  const supabase = createClient()
+
+  // Real-time subscription — charts update live
+  useEffect(() => {
+    const channel = supabase
+      .channel('charts-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, payload => {
+        if (payload.eventType === 'UPDATE')
+          setTasks(prev => prev.map(t => t.id === (payload.new as Task).id ? { ...t, ...(payload.new as Task) } : t))
+        else if (payload.eventType === 'INSERT')
+          setTasks(prev => [...prev, payload.new as Task])
+        else if (payload.eventType === 'DELETE')
+          setTasks(prev => prev.filter(t => t.id !== (payload.old as Task).id))
+      })
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [supabase])
+
+  // --- Data transforms ---
+
+  // 1. Tasks by stream (stacked bar)
+  const byStream = streams.map((s, i) => {
+    const st = tasks.filter(t => t.stream_id === s.id)
+    return {
+      name: s.name.replace(' Enhancement','').replace(' Lab','').replace(' & QA',''),
+      Done:        st.filter(t => t.status === 'done').length,
+      'In Progress': st.filter(t => t.status === 'in_progress').length,
+      'To Do':     st.filter(t => t.status === 'todo').length,
+      color: COLORS[i],
+    }
+  })
+
+  // 2. Overall status pie
+  const overall = [
+    { name: 'Done',        value: tasks.filter(t => t.status === 'done').length,        color: '#10b981' },
+    { name: 'In Progress', value: tasks.filter(t => t.status === 'in_progress').length, color: '#f59e0b' },
+    { name: 'To Do',       value: tasks.filter(t => t.status === 'todo').length,        color: '#e5e7eb' },
+  ]
+
+  // 3. Points by stream
+  const pointsByStream = streams.map((s, i) => {
+    const st = tasks.filter(t => t.stream_id === s.id)
+    return {
+      name: s.name.replace(' Enhancement','').replace(' Lab','').replace(' & QA',''),
+      'Done pts':  st.filter(t => t.status === 'done').reduce((a, t) => a + (t.points||0), 0),
+      'Remaining': st.filter(t => t.status !== 'done').reduce((a, t) => a + (t.points||0), 0),
+    }
+  })
+
+  // 4. Burndown simulation (done tasks per month)
+  const burndown = [1, 2, 3, 4].map(m => {
+    const monthTasks = tasks.filter(t => t.month === m)
+    const total = tasks.length
+    const doneSoFar = tasks.filter(t => t.status === 'done' && t.month !== null && t.month <= m).length
+    return {
+      name: `Month ${m}`,
+      Remaining: Math.max(0, total - doneSoFar),
+      Ideal: Math.round(total - (total / 4) * m),
+    }
+  })
+
+  // 5. Priority distribution
+  const priorityData = ['high','medium','low'].map(p => ({
+    name: p.charAt(0).toUpperCase() + p.slice(1),
+    Done:    tasks.filter(t => t.priority === p && t.status === 'done').length,
+    Active:  tasks.filter(t => t.priority === p && t.status === 'in_progress').length,
+    Todo:    tasks.filter(t => t.priority === p && t.status === 'todo').length,
+  }))
+
+  return (
+    <div className="space-y-6">
+      {/* Row 1 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Overall status pie */}
+        <div className="card p-5">
+          <h2 className="text-sm font-semibold text-gray-700 mb-4">Overall status</h2>
+          <ResponsiveContainer width="100%" height={220}>
+            <PieChart>
+              <Pie data={overall} cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={3} dataKey="value">
+                {overall.map((e, i) => <Cell key={i} fill={e.color} />)}
+              </Pie>
+              <Tooltip formatter={(v: number) => [`${v} tasks`, '']} />
+              <Legend iconType="circle" iconSize={10} />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Tasks per stream bar */}
+        <div className="card p-5">
+          <h2 className="text-sm font-semibold text-gray-700 mb-4">Tasks by stream</h2>
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={byStream} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+              <YAxis tick={{ fontSize: 11 }} />
+              <Tooltip />
+              <Legend iconSize={10} />
+              <Bar dataKey="Done"        stackId="a" fill="#10b981" radius={[0,0,0,0]} />
+              <Bar dataKey="In Progress" stackId="a" fill="#f59e0b" />
+              <Bar dataKey="To Do"       stackId="a" fill="#e5e7eb" radius={[4,4,0,0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Row 2 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Points by stream */}
+        <div className="card p-5">
+          <h2 className="text-sm font-semibold text-gray-700 mb-4">Story points by stream</h2>
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={pointsByStream} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+              <YAxis tick={{ fontSize: 11 }} />
+              <Tooltip />
+              <Legend iconSize={10} />
+              <Bar dataKey="Done pts"  stackId="p" fill="#6366f1" radius={[0,0,0,0]} />
+              <Bar dataKey="Remaining" stackId="p" fill="#e0e7ff" radius={[4,4,0,0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Burndown */}
+        <div className="card p-5">
+          <h2 className="text-sm font-semibold text-gray-700 mb-4">Burndown (tasks remaining)</h2>
+          <ResponsiveContainer width="100%" height={220}>
+            <LineChart data={burndown} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+              <YAxis tick={{ fontSize: 11 }} />
+              <Tooltip />
+              <Legend iconSize={10} />
+              <Line type="monotone" dataKey="Remaining" stroke="#6366f1" strokeWidth={2} dot={{ r: 4 }} />
+              <Line type="monotone" dataKey="Ideal"     stroke="#d1d5db" strokeWidth={1.5} strokeDasharray="5 5" dot={false} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Row 3 - Priority */}
+      <div className="card p-5">
+        <h2 className="text-sm font-semibold text-gray-700 mb-4">Tasks by priority &amp; status</h2>
+        <ResponsiveContainer width="100%" height={200}>
+          <BarChart data={priorityData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+            <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+            <YAxis tick={{ fontSize: 11 }} />
+            <Tooltip />
+            <Legend iconSize={10} />
+            <Bar dataKey="Done"   fill="#10b981" radius={[0,0,0,0]} />
+            <Bar dataKey="Active" fill="#f59e0b" />
+            <Bar dataKey="Todo"   fill="#e5e7eb" radius={[4,4,0,0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  )
+}
