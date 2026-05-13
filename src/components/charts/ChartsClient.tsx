@@ -65,25 +65,32 @@ export default function ChartsClient({ initialTasks, streams }: Props) {
     }
   })
 
-  // 4. Burndown simulation (done tasks per month)
+  // 4. Burndown simulation (weekly from now until Sep 30, 2025)
   const totalTasks = tasks.length
   const yAxisMax = Math.ceil(totalTasks * 1.1)
   
-  // Calculate cumulative done tasks up to each month
-  const burndown = [0, 1, 2, 3, 4].map(m => {
-    if (m === 0) {
-      // Starting point - all tasks remaining
-      return {
-        name: 'Start',
-        Remaining: totalTasks,
-        Ideal: totalTasks,
-      }
-    }
-    const doneSoFar = tasks.filter(t => t.status === 'done' && (t.month === null || t.month <= m)).length
+  const today = new Date()
+  const deadline = new Date('2025-09-30')
+  const msPerWeek = 7 * 24 * 60 * 60 * 1000
+  const weeksRemaining = Math.ceil((deadline.getTime() - today.getTime()) / msPerWeek)
+  
+  // Generate weekly burndown data
+  const burndown = Array.from({ length: weeksRemaining + 1 }, (_, i) => {
+    const weekDate = new Date(today.getTime() + i * msPerWeek)
+    const weekLabel = i === 0 ? 'Now' : `W${i}`
+    
+    // Calculate ideal linear burndown
+    const idealRemaining = Math.round(totalTasks - (totalTasks / weeksRemaining) * i)
+    
+    // Calculate actual remaining (for now, use done tasks as proxy)
+    // In a real scenario, you'd track completion dates
+    const doneCount = tasks.filter(t => t.status === 'done').length
+    const actualRemaining = i === 0 ? totalTasks : Math.max(0, totalTasks - doneCount)
+    
     return {
-      name: `Month ${m}`,
-      Remaining: Math.max(0, totalTasks - doneSoFar),
-      Ideal: Math.round(totalTasks - (totalTasks / 4) * m),
+      name: weekLabel,
+      Remaining: actualRemaining,
+      Ideal: idealRemaining,
     }
   })
 
