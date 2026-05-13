@@ -5,6 +5,14 @@ import { Task, Stream, Sprint, Status } from '@/types'
 import { ChevronDown, Plus, X, Save } from 'lucide-react'
 import clsx from 'clsx'
 
+const TEAM_MEMBERS = [
+  'Lutho Buyaphi',
+  'Thabo Kumalo',
+  'Kamo (Kamohelo)',
+  'Mila (Emilia)',
+  'Lindo',
+]
+
 const STATUS_OPTIONS: { value: Status; label: string; cls: string }[] = [
   { value: 'done',        label: 'Done',        cls: 'status-done' },
   { value: 'in_progress', label: 'In progress', cls: 'status-in_progress' },
@@ -55,7 +63,7 @@ export default function TaskTable({ initialTasks, streams, sprints }: Props) {
   const [filterStream, setFilterStream] = useState('all')
   const [filterStatus, setFilterStatus] = useState('all')
   const [addingTask, setAddingTask] = useState(false)
-  const [newTask, setNewTask] = useState<{ title: string; stream_id: string; sprint_id: string; priority: 'high'|'medium'|'low'; points: number; month: number }>({ title: '', stream_id: streams[0]?.id ?? '', sprint_id: '', priority: 'medium', points: 0, month: 1 })
+  const [newTask, setNewTask] = useState<{ title: string; stream_id: string; sprint_id: string; priority: 'high'|'medium'|'low'; points: number; month: number; assigned_to: string }>({ title: '', stream_id: streams[0]?.id ?? '', sprint_id: '', priority: 'medium', points: 0, month: 1, assigned_to: '' })
   const [saving, setSaving] = useState(false)
   const supabase = createClient()
 
@@ -97,7 +105,7 @@ export default function TaskTable({ initialTasks, streams, sprints }: Props) {
     }).select('*, stream:streams(*), sprint:sprints(*)').single()
     if (data) setTasks(prev => [...prev, data as Task])
     setAddingTask(false)
-    setNewTask({ title: '', stream_id: streams[0]?.id ?? '', sprint_id: '', priority: 'medium', points: 0, month: 1 })
+    setNewTask({ title: '', stream_id: streams[0]?.id ?? '', sprint_id: '', priority: 'medium', points: 0, month: 1, assigned_to: '' })
     setSaving(false)
   }
 
@@ -154,6 +162,10 @@ export default function TaskTable({ initialTasks, streams, sprints }: Props) {
               <option value="medium">Medium priority</option>
               <option value="low">Low priority</option>
             </select>
+            <select className="input" value={newTask.assigned_to} onChange={e => setNewTask(p => ({ ...p, assigned_to: e.target.value }))}>
+              <option value="">Assign to...</option>
+              {TEAM_MEMBERS.map(m => <option key={m} value={m}>{m}</option>)}
+            </select>
             <div className="flex items-center gap-2">
               <label className="text-xs text-gray-500 whitespace-nowrap">Points</label>
               <input type="number" className="input" min={0} max={20} value={newTask.points} onChange={e => setNewTask(p => ({ ...p, points: +e.target.value }))} />
@@ -190,6 +202,9 @@ export default function TaskTable({ initialTasks, streams, sprints }: Props) {
                   <tr key={task.id} className="hover:bg-gray-50/50 transition-colors">
                     <td className="px-4 py-3 max-w-xs">
                       <span className={clsx('text-gray-800', task.status === 'done' && 'line-through text-gray-400')}>{task.title}</span>
+                      {task.assigned_to && (
+                        <div className="text-xs text-gray-400 mt-0.5">→ {task.assigned_to}</div>
+                      )}
                     </td>
                     <td className="px-2 py-3 w-28">
                       <StatusBadge status={task.status} taskId={task.id} onChange={updateStatus} />
