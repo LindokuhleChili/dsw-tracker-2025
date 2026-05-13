@@ -1,9 +1,10 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
 import { Task, Stream, Sprint, Status } from '@/types'
 import { ChevronDown, Plus, X, Save } from 'lucide-react'
 import clsx from 'clsx'
+import { createPortal } from 'react-dom'
 
 const TEAM_MEMBERS = [
   'Lutho Buyaphi',
@@ -31,39 +32,54 @@ interface Props {
 
 function StatusBadge({ status, taskId, onChange }: { status: Status; taskId: string; onChange: (id: string, s: Status) => void }) {
   const [open, setOpen] = useState(false)
+  const [position, setPosition] = useState({ top: 0, left: 0 })
+  const buttonRef = useRef<HTMLButtonElement>(null)
   const opt = STATUS_OPTIONS.find(o => o.value === status)!
   
   useEffect(() => {
-    if (open) {
-      const closeOthers = () => setOpen(false)
-      document.addEventListener('click', closeOthers)
-      return () => document.removeEventListener('click', closeOthers)
+    if (open && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect()
+      setPosition({
+        top: rect.bottom + window.scrollY + 4,
+        left: rect.left + window.scrollX
+      })
+      
+      const closeDropdown = () => setOpen(false)
+      document.addEventListener('click', closeDropdown)
+      return () => document.removeEventListener('click', closeDropdown)
     }
   }, [open])
   
+  const dropdown = open && (
+    <div 
+      className="fixed bg-white border border-gray-200 rounded-lg shadow-xl py-1 min-w-[130px] z-[9999]" 
+      style={{ top: `${position.top}px`, left: `${position.left}px` }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      {STATUS_OPTIONS.map(o => (
+        <button
+          key={o.value}
+          onClick={() => { onChange(taskId, o.value); setOpen(false) }}
+          className="w-full text-left px-3 py-1.5 text-xs hover:bg-gray-50 flex items-center gap-2"
+        >
+          <span className={clsx('inline-block px-1.5 py-0.5 rounded-full text-xs font-medium', o.cls)}>{o.label}</span>
+        </button>
+      ))}
+    </div>
+  )
+  
   return (
-    <div className="relative z-10" onClick={(e) => e.stopPropagation()}>
+    <>
       <button
-        onClick={() => setOpen(o => !o)}
+        ref={buttonRef}
+        onClick={(e) => { e.stopPropagation(); setOpen(o => !o) }}
         className={clsx('inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full font-medium', opt.cls)}
       >
         {opt.label}
         <ChevronDown className="w-3 h-3" />
       </button>
-      {open && (
-        <div className="absolute z-[9999] top-full mt-1 left-0 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[130px]">
-          {STATUS_OPTIONS.map(o => (
-            <button
-              key={o.value}
-              onClick={() => { onChange(taskId, o.value); setOpen(false) }}
-              className="w-full text-left px-3 py-1.5 text-xs hover:bg-gray-50 flex items-center gap-2"
-            >
-              <span className={clsx('inline-block px-1.5 py-0.5 rounded-full text-xs font-medium', o.cls)}>{o.label}</span>
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
+      {typeof document !== 'undefined' && dropdown && createPortal(dropdown, document.body)}
+    </>
   )
 }
 
@@ -198,7 +214,7 @@ export default function TaskTable({ initialTasks, streams, sprints }: Props) {
       {/* Task groups */}
       <div className="space-y-4">
         {grouped.map(({ stream, tasks: groupTasks }) => (
-          <div key={stream.id} className="card overflow-visible">
+          <div key={stream.id} className="card overflow-hidden">
             <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-50 bg-gray-50/60">
               <span className="w-2 h-2 rounded-full" style={{ background: stream.color }} />
               <span className="text-sm font-semibold text-gray-800">{stream.name}</span>
