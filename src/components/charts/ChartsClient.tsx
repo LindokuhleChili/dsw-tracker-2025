@@ -162,7 +162,7 @@ export default function ChartsClient({ initialTasks, streams }: Props) {
             <ResponsiveContainer width="100%" height={500}>
               <LineChart data={burndown} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="name" tick={{ fontSize: 13 }} />
+                <XAxis dataKey="name" tick={{ fontSize: 13 }} interval="preserveStartEnd" />
                 <YAxis tick={{ fontSize: 13 }} allowDecimals={false} domain={[0, yAxisMax]} />
                 <Tooltip />
                 <Legend iconSize={12} />
@@ -282,7 +282,7 @@ export default function ChartsClient({ initialTasks, streams }: Props) {
           <ResponsiveContainer width="100%" height={220}>
             <LineChart data={burndown} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+              <XAxis dataKey="name" tick={{ fontSize: 11 }} interval="preserveStartEnd" />
               <YAxis tick={{ fontSize: 11 }} allowDecimals={false} domain={[0, yAxisMax]} />
               <Tooltip />
               <Legend iconSize={10} />
