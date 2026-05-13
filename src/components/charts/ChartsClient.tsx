@@ -68,7 +68,17 @@ export default function ChartsClient({ initialTasks, streams }: Props) {
   // 4. Burndown simulation (done tasks per month)
   const totalTasks = tasks.length
   const yAxisMax = Math.ceil(totalTasks * 1.1)
-  const burndown = [1, 2, 3, 4].map(m => {
+  
+  // Calculate cumulative done tasks up to each month
+  const burndown = [0, 1, 2, 3, 4].map(m => {
+    if (m === 0) {
+      // Starting point - all tasks remaining
+      return {
+        name: 'Start',
+        Remaining: totalTasks,
+        Ideal: totalTasks,
+      }
+    }
     const doneSoFar = tasks.filter(t => t.status === 'done' && (t.month === null || t.month <= m)).length
     return {
       name: `Month ${m}`,
