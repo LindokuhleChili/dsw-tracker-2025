@@ -114,7 +114,7 @@ export default function ChartsClient({ initialTasks, streams }: Props) {
               <BarChart data={byStream} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                 <XAxis dataKey="name" tick={{ fontSize: 13 }} />
-                <YAxis tick={{ fontSize: 13 }} />
+                <YAxis tick={{ fontSize: 13 }} allowDecimals={false} />
                 <Tooltip />
                 <Legend iconSize={12} />
                 <Bar dataKey="Done"        stackId="a" fill="#10b981" radius={[0,0,0,0]} />
@@ -128,7 +128,7 @@ export default function ChartsClient({ initialTasks, streams }: Props) {
               <BarChart data={pointsByStream} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                 <XAxis dataKey="name" tick={{ fontSize: 13 }} />
-                <YAxis tick={{ fontSize: 13 }} />
+                <YAxis tick={{ fontSize: 13 }} allowDecimals={false} />
                 <Tooltip />
                 <Legend iconSize={12} />
                 <Bar dataKey="Done pts"  stackId="p" fill="#6366f1" radius={[0,0,0,0]} />
@@ -141,7 +141,7 @@ export default function ChartsClient({ initialTasks, streams }: Props) {
               <LineChart data={burndown} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                 <XAxis dataKey="name" tick={{ fontSize: 13 }} />
-                <YAxis tick={{ fontSize: 13 }} />
+                <YAxis tick={{ fontSize: 13 }} allowDecimals={false} />
                 <Tooltip />
                 <Legend iconSize={12} />
                 <Line type="monotone" dataKey="Remaining" stroke="#6366f1" strokeWidth={3} dot={{ r: 6 }} />
@@ -154,7 +154,7 @@ export default function ChartsClient({ initialTasks, streams }: Props) {
               <BarChart data={priorityData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                 <XAxis dataKey="name" tick={{ fontSize: 13 }} />
-                <YAxis tick={{ fontSize: 13 }} />
+                <YAxis tick={{ fontSize: 13 }} allowDecimals={false} />
                 <Tooltip />
                 <Legend iconSize={12} />
                 <Bar dataKey="Done"   fill="#10b981" radius={[0,0,0,0]} />
@@ -207,7 +207,7 @@ export default function ChartsClient({ initialTasks, streams }: Props) {
             <BarChart data={byStream} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} />
+              <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
               <Tooltip />
               <Legend iconSize={10} />
               <Bar dataKey="Done"        stackId="a" fill="#10b981" radius={[0,0,0,0]} />
@@ -236,7 +236,7 @@ export default function ChartsClient({ initialTasks, streams }: Props) {
             <BarChart data={pointsByStream} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} />
+              <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
               <Tooltip />
               <Legend iconSize={10} />
               <Bar dataKey="Done pts"  stackId="p" fill="#6366f1" radius={[0,0,0,0]} />
@@ -261,7 +261,7 @@ export default function ChartsClient({ initialTasks, streams }: Props) {
             <LineChart data={burndown} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} />
+              <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
               <Tooltip />
               <Legend iconSize={10} />
               <Line type="monotone" dataKey="Remaining" stroke="#6366f1" strokeWidth={2} dot={{ r: 4 }} />
@@ -287,7 +287,7 @@ export default function ChartsClient({ initialTasks, streams }: Props) {
           <BarChart data={priorityData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
             <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-            <YAxis tick={{ fontSize: 11 }} />
+            <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
             <Tooltip />
             <Legend iconSize={10} />
             <Bar dataKey="Done"   fill="#10b981" radius={[0,0,0,0]} />
