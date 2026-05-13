@@ -67,9 +67,8 @@ export default function ChartsClient({ initialTasks, streams }: Props) {
 
   // 4. Burndown simulation (done tasks per month)
   const burndown = [1, 2, 3, 4].map(m => {
-    const monthTasks = tasks.filter(t => t.month === m)
     const total = tasks.length
-    const doneSoFar = tasks.filter(t => t.status === 'done' && t.month !== null && t.month <= m).length
+    const doneSoFar = tasks.filter(t => t.status === 'done' && (t.month === null || t.month <= m)).length
     return {
       name: `Month ${m}`,
       Remaining: Math.max(0, total - doneSoFar),
@@ -88,7 +87,12 @@ export default function ChartsClient({ initialTasks, streams }: Props) {
   return (
     <div className="space-y-6">
       {/* Debug info */}
-      <div className="text-xs text-gray-400 mb-2">Total tasks loaded: {tasks.length}</div>
+      <div className="text-xs text-gray-400 mb-2">
+        Total tasks loaded: {tasks.length} | 
+        Done: {tasks.filter(t => t.status === 'done').length} | 
+        In Progress: {tasks.filter(t => t.status === 'in_progress').length} | 
+        To Do: {tasks.filter(t => t.status === 'todo').length}
+      </div>
       
       {maximized ? (
         <div className="card p-5">
