@@ -7,7 +7,7 @@ export const revalidate = 0
 export default async function ChartsPage() {
   const supabase = await createServerSupabase()
   const [{ data: tasks }, { data: streams }] = await Promise.all([
-    supabase.from('tasks').select('*').order('created_at'),
+    supabase.from('tasks').select('*', { count: 'exact' }).order('created_at'),
     supabase.from('streams').select('*').order('created_at'),
   ])
 
