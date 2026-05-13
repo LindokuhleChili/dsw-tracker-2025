@@ -42,7 +42,7 @@ function StatusBadge({ status, taskId, onChange }: { status: Status; taskId: str
         <ChevronDown className="w-3 h-3" />
       </button>
       {open && (
-        <div className="absolute z-50 top-full mt-1 left-0 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[130px]">
+        <div className="absolute z-[9999] top-full mt-1 left-0 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[130px]">
           {STATUS_OPTIONS.map(o => (
             <button
               key={o.value}
