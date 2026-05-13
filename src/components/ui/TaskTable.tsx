@@ -199,7 +199,7 @@ export default function TaskTable({ initialTasks, streams, sprints }: Props) {
             <table className="w-full text-sm">
               <tbody className="divide-y divide-gray-50">
                 {groupTasks.map(task => (
-                  <tr key={task.id} className="hover:bg-gray-50/50 transition-colors">
+                  <tr key={task.id} className="hover:bg-gray-50/50 transition-colors relative">
                     <td className="px-4 py-3 max-w-xs">
                       <span className={clsx('text-gray-800', task.status === 'done' && 'line-through text-gray-400')}>{task.title}</span>
                       {task.assigned_to && (
