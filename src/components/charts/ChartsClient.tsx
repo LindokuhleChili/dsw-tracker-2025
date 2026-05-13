@@ -66,13 +66,14 @@ export default function ChartsClient({ initialTasks, streams }: Props) {
   })
 
   // 4. Burndown simulation (done tasks per month)
+  const totalTasks = tasks.length
+  const yAxisMax = Math.ceil(totalTasks * 1.1)
   const burndown = [1, 2, 3, 4].map(m => {
-    const total = tasks.length
     const doneSoFar = tasks.filter(t => t.status === 'done' && (t.month === null || t.month <= m)).length
     return {
       name: `Month ${m}`,
-      Remaining: Math.max(0, total - doneSoFar),
-      Ideal: Math.round(total - (total / 4) * m),
+      Remaining: Math.max(0, totalTasks - doneSoFar),
+      Ideal: Math.round(totalTasks - (totalTasks / 4) * m),
     }
   })
 
@@ -145,7 +146,7 @@ export default function ChartsClient({ initialTasks, streams }: Props) {
               <LineChart data={burndown} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                 <XAxis dataKey="name" tick={{ fontSize: 13 }} />
-                <YAxis tick={{ fontSize: 13 }} allowDecimals={false} />
+                <YAxis tick={{ fontSize: 13 }} allowDecimals={false} domain={[0, yAxisMax]} />
                 <Tooltip />
                 <Legend iconSize={12} />
                 <Line type="monotone" dataKey="Remaining" stroke="#6366f1" strokeWidth={3} dot={{ r: 6 }} />
@@ -265,7 +266,7 @@ export default function ChartsClient({ initialTasks, streams }: Props) {
             <LineChart data={burndown} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
+              <YAxis tick={{ fontSize: 11 }} allowDecimals={false} domain={[0, yAxisMax]} />
               <Tooltip />
               <Legend iconSize={10} />
               <Line type="monotone" dataKey="Remaining" stroke="#6366f1" strokeWidth={2} dot={{ r: 4 }} />
