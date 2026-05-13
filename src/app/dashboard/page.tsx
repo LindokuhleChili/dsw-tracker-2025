@@ -15,7 +15,7 @@ export default async function DashboardPage() {
     { data: streams },
     { data: milestones },
   ] = await Promise.all([
-    supabase.from('tasks').select('*, stream:streams(*), sprint:sprints(*)').order('created_at'),
+    supabase.from('tasks').select('*, stream:streams(*), sprint:sprints(*)').order('created_at').range(0, 1000),
     supabase.from('streams').select('*').order('created_at'),
     supabase.from('milestones').select('*').order('target_date'),
   ])

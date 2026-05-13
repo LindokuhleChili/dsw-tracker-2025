@@ -12,7 +12,7 @@ export default async function TasksPage() {
     { data: streams },
     { data: sprints },
   ] = await Promise.all([
-    supabase.from('tasks').select('*, stream:streams(*), sprint:sprints(*)').order('stream_id').order('month'),
+    supabase.from('tasks').select('*, stream:streams(*), sprint:sprints(*)').order('stream_id').order('month').range(0, 1000),
     supabase.from('streams').select('*').order('created_at'),
     supabase.from('sprints').select('*').order('start_date'),
   ])
