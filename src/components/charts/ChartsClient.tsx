@@ -65,43 +65,51 @@ export default function ChartsClient({ initialTasks, streams }: Props) {
     }
   })
 
-  // 4. Burndown simulation (weekly from now until Sep 30, 2025)
+  // 4. Burndown simulation (weekly from project start to deadline)
   const totalTasks = tasks.length
   const yAxisMax = Math.ceil(totalTasks * 1.1)
   
-  const today = new Date()
   const projectStart = new Date('2025-03-16')
   const deadline = new Date('2025-09-30')
+  const today = new Date()
   const msPerWeek = 7 * 24 * 60 * 60 * 1000
   
-  // Calculate weeks from project start to deadline
+  // Calculate total weeks in project
   const totalProjectWeeks = Math.ceil((deadline.getTime() - projectStart.getTime()) / msPerWeek)
-  const weeksElapsed = Math.max(0, Math.floor((today.getTime() - projectStart.getTime()) / msPerWeek))
-  const weeksRemaining = Math.max(1, totalProjectWeeks - weeksElapsed)
+  const currentWeek = Math.floor((today.getTime() - projectStart.getTime()) / msPerWeek)
   
-  // Generate weekly burndown data
+  // Generate data point for EVERY week from 0 to totalProjectWeeks
   const doneCount = tasks.filter(t => t.status === 'done').length
-  const burndown = Array.from({ length: Math.min(weeksRemaining + 1, 30) }, (_, i) => {
-    const weekNumber = weeksElapsed + i
-    const weekLabel = i === 0 ? 'Now' : `Week ${weekNumber}`
+  const currentRemaining = totalTasks - doneCount
+  
+  const burndown = Array.from({ length: totalProjectWeeks + 1 }, (_, weekNum) => {
+    // Ideal burndown: linear decrease from totalTasks to 0
+    const idealRemaining = Math.max(0, Math.round(totalTasks - (totalTasks / totalProjectWeeks) * weekNum))
     
-    // Calculate ideal linear burndown from current point
-    const idealRemaining = Math.max(0, Math.round(totalTasks - (totalTasks / totalProjectWeeks) * weekNumber))
-    
-    // Calculate actual remaining
-    const actualRemaining = i === 0 ? (totalTasks - doneCount) : Math.max(0, totalTasks - doneCount)
+    // Actual remaining: show current progress at current week, then project forward
+    let actualRemaining
+    if (weekNum < currentWeek) {
+      // Past weeks: interpolate from start to current
+      actualRemaining = Math.round(totalTasks - (doneCount / currentWeek) * weekNum)
+    } else if (weekNum === currentWeek) {
+      // Current week: actual remaining
+      actualRemaining = currentRemaining
+    } else {
+      // Future weeks: project current pace forward
+      actualRemaining = Math.max(0, currentRemaining - Math.round((currentRemaining / (totalProjectWeeks - currentWeek)) * (weekNum - currentWeek)))
+    }
     
     return {
-      name: weekLabel,
-      Remaining: actualRemaining,
+      name: weekNum === currentWeek ? `Week ${weekNum} (Now)` : `Week ${weekNum}`,
+      Remaining: Math.max(0, actualRemaining),
       Ideal: idealRemaining,
     }
   })
   
-  // Fallback if burndown is empty
+  // Fallback if something goes wrong
   if (burndown.length === 0) {
     burndown.push(
-      { name: 'Now', Remaining: totalTasks - doneCount, Ideal: totalTasks },
+      { name: 'Week 0', Remaining: totalTasks, Ideal: totalTasks },
       { name: 'End', Remaining: 0, Ideal: 0 }
     )
   }
@@ -174,7 +182,14 @@ export default function ChartsClient({ initialTasks, streams }: Props) {
             <ResponsiveContainer width="100%" height={500}>
               <LineChart data={burndown} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="name" tick={{ fontSize: 13 }} interval="preserveStartEnd" />
+                <XAxis 
+                  dataKey="name" 
+                  tick={{ fontSize: 13 }} 
+                  interval={Math.floor(burndown.length / 10)} 
+                  angle={-45}
+                  textAnchor="end"
+                  height={80}
+                />
                 <YAxis tick={{ fontSize: 13 }} allowDecimals={false} domain={[0, yAxisMax]} />
                 <Tooltip />
                 <Legend iconSize={12} />
@@ -294,7 +309,14 @@ export default function ChartsClient({ initialTasks, streams }: Props) {
           <ResponsiveContainer width="100%" height={220}>
             <LineChart data={burndown} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="name" tick={{ fontSize: 11 }} interval="preserveStartEnd" />
+              <XAxis 
+                dataKey="name" 
+                tick={{ fontSize: 10 }} 
+                interval={Math.floor(burndown.length / 8)} 
+                angle={-45}
+                textAnchor="end"
+                height={60}
+              />
               <YAxis tick={{ fontSize: 11 }} allowDecimals={false} domain={[0, yAxisMax]} />
               <Tooltip />
               <Legend iconSize={10} />
