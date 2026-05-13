@@ -32,8 +32,17 @@ interface Props {
 function StatusBadge({ status, taskId, onChange }: { status: Status; taskId: string; onChange: (id: string, s: Status) => void }) {
   const [open, setOpen] = useState(false)
   const opt = STATUS_OPTIONS.find(o => o.value === status)!
+  
+  useEffect(() => {
+    if (open) {
+      const closeOthers = () => setOpen(false)
+      document.addEventListener('click', closeOthers)
+      return () => document.removeEventListener('click', closeOthers)
+    }
+  }, [open])
+  
   return (
-    <div className="relative z-10">
+    <div className="relative z-10" onClick={(e) => e.stopPropagation()}>
       <button
         onClick={() => setOpen(o => !o)}
         className={clsx('inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full font-medium', opt.cls)}
