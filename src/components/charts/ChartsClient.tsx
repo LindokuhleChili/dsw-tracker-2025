@@ -98,8 +98,8 @@ export default function ChartsClient({ initialTasks, streams }: Props) {
               <Minimize2 className="w-5 h-5" />
             </button>
           </div>
-          <ResponsiveContainer width="100%" height={500}>
-            {maximized === 'Overall status' ? (
+          {maximized === 'Overall status' && (
+            <ResponsiveContainer width="100%" height={500}>
               <PieChart>
                 <Pie data={overall} cx="50%" cy="50%" innerRadius={100} outerRadius={180} paddingAngle={3} dataKey="value">
                   {overall.map((e, i) => <Cell key={i} fill={e.color} />)}
@@ -107,7 +107,10 @@ export default function ChartsClient({ initialTasks, streams }: Props) {
                 <Tooltip formatter={(v: number) => [`${v} tasks`, '']} />
                 <Legend iconType="circle" iconSize={12} />
               </PieChart>
-            ) : maximized === 'Tasks by stream' ? (
+            </ResponsiveContainer>
+          )}
+          {maximized === 'Tasks by stream' && (
+            <ResponsiveContainer width="100%" height={500}>
               <BarChart data={byStream} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                 <XAxis dataKey="name" tick={{ fontSize: 13 }} />
@@ -118,7 +121,10 @@ export default function ChartsClient({ initialTasks, streams }: Props) {
                 <Bar dataKey="In Progress" stackId="a" fill="#f59e0b" />
                 <Bar dataKey="To Do"       stackId="a" fill="#e5e7eb" radius={[4,4,0,0]} />
               </BarChart>
-            ) : maximized === 'Story points by stream' ? (
+            </ResponsiveContainer>
+          )}
+          {maximized === 'Story points by stream' && (
+            <ResponsiveContainer width="100%" height={500}>
               <BarChart data={pointsByStream} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                 <XAxis dataKey="name" tick={{ fontSize: 13 }} />
@@ -128,7 +134,10 @@ export default function ChartsClient({ initialTasks, streams }: Props) {
                 <Bar dataKey="Done pts"  stackId="p" fill="#6366f1" radius={[0,0,0,0]} />
                 <Bar dataKey="Remaining" stackId="p" fill="#e0e7ff" radius={[4,4,0,0]} />
               </BarChart>
-            ) : maximized === 'Burndown (tasks remaining)' ? (
+            </ResponsiveContainer>
+          )}
+          {maximized === 'Burndown (tasks remaining)' && (
+            <ResponsiveContainer width="100%" height={500}>
               <LineChart data={burndown} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                 <XAxis dataKey="name" tick={{ fontSize: 13 }} />
@@ -138,7 +147,10 @@ export default function ChartsClient({ initialTasks, streams }: Props) {
                 <Line type="monotone" dataKey="Remaining" stroke="#6366f1" strokeWidth={3} dot={{ r: 6 }} />
                 <Line type="monotone" dataKey="Ideal"     stroke="#d1d5db" strokeWidth={2} strokeDasharray="5 5" dot={false} />
               </LineChart>
-            ) : maximized === 'Tasks by priority & status' ? (
+            </ResponsiveContainer>
+          )}
+          {maximized === 'Tasks by priority & status' && (
+            <ResponsiveContainer width="100%" height={500}>
               <BarChart data={priorityData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                 <XAxis dataKey="name" tick={{ fontSize: 13 }} />
@@ -149,8 +161,8 @@ export default function ChartsClient({ initialTasks, streams }: Props) {
                 <Bar dataKey="Active" fill="#f59e0b" />
                 <Bar dataKey="Todo"   fill="#e5e7eb" radius={[4,4,0,0]} />
               </BarChart>
-            ) : null}
-          </ResponsiveContainer>
+            </ResponsiveContainer>
+          )}
         </div>
       ) : (
         <>
