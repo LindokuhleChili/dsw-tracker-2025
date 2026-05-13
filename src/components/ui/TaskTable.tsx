@@ -189,7 +189,7 @@ export default function TaskTable({ initialTasks, streams, sprints }: Props) {
       {/* Task groups */}
       <div className="space-y-4">
         {grouped.map(({ stream, tasks: groupTasks }) => (
-          <div key={stream.id} className="card overflow-hidden">
+          <div key={stream.id} className="card overflow-visible">
             <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-50 bg-gray-50/60">
               <span className="w-2 h-2 rounded-full" style={{ background: stream.color }} />
               <span className="text-sm font-semibold text-gray-800">{stream.name}</span>
