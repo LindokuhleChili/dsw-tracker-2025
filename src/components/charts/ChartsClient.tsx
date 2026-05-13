@@ -70,22 +70,26 @@ export default function ChartsClient({ initialTasks, streams }: Props) {
   const yAxisMax = Math.ceil(totalTasks * 1.1)
   
   const today = new Date()
+  const projectStart = new Date('2025-03-16')
   const deadline = new Date('2025-09-30')
   const msPerWeek = 7 * 24 * 60 * 60 * 1000
-  const weeksRemaining = Math.ceil((deadline.getTime() - today.getTime()) / msPerWeek)
+  
+  // Calculate weeks from project start to deadline
+  const totalProjectWeeks = Math.ceil((deadline.getTime() - projectStart.getTime()) / msPerWeek)
+  const weeksElapsed = Math.max(0, Math.floor((today.getTime() - projectStart.getTime()) / msPerWeek))
+  const weeksRemaining = Math.max(1, totalProjectWeeks - weeksElapsed)
   
   // Generate weekly burndown data
-  const burndown = Array.from({ length: weeksRemaining + 1 }, (_, i) => {
-    const weekDate = new Date(today.getTime() + i * msPerWeek)
-    const weekLabel = i === 0 ? 'Now' : `W${i}`
+  const doneCount = tasks.filter(t => t.status === 'done').length
+  const burndown = Array.from({ length: Math.min(weeksRemaining + 1, 30) }, (_, i) => {
+    const weekNumber = weeksElapsed + i
+    const weekLabel = i === 0 ? 'Now' : `Week ${weekNumber}`
     
-    // Calculate ideal linear burndown
-    const idealRemaining = Math.round(totalTasks - (totalTasks / weeksRemaining) * i)
+    // Calculate ideal linear burndown from current point
+    const idealRemaining = Math.max(0, Math.round(totalTasks - (totalTasks / totalProjectWeeks) * weekNumber))
     
-    // Calculate actual remaining (for now, use done tasks as proxy)
-    // In a real scenario, you'd track completion dates
-    const doneCount = tasks.filter(t => t.status === 'done').length
-    const actualRemaining = i === 0 ? totalTasks : Math.max(0, totalTasks - doneCount)
+    // Calculate actual remaining
+    const actualRemaining = i === 0 ? (totalTasks - doneCount) : Math.max(0, totalTasks - doneCount)
     
     return {
       name: weekLabel,
@@ -93,6 +97,14 @@ export default function ChartsClient({ initialTasks, streams }: Props) {
       Ideal: idealRemaining,
     }
   })
+  
+  // Fallback if burndown is empty
+  if (burndown.length === 0) {
+    burndown.push(
+      { name: 'Now', Remaining: totalTasks - doneCount, Ideal: totalTasks },
+      { name: 'End', Remaining: 0, Ideal: 0 }
+    )
+  }
 
   // 5. Priority distribution
   const priorityData = ['high','medium','low'].map(p => ({
