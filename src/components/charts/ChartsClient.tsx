@@ -164,7 +164,11 @@ export default function ChartsClient({ initialTasks, streams }: Props) {
         <div className="card p-5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-semibold text-gray-700">Overall status</h2>
-            <button onClick={() => setMaximized('Overall status')} className="text-gray-400 hover:text-gray-600">
+            <button 
+              onClick={() => setMaximized('Overall status')} 
+              className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+              title="Maximize chart"
+            >
               <Maximize2 className="w-4 h-4" />
             </button>
           </div>
@@ -183,7 +187,11 @@ export default function ChartsClient({ initialTasks, streams }: Props) {
         <div className="card p-5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-semibold text-gray-700">Tasks by stream</h2>
-            <button onClick={() => setMaximized('Tasks by stream')} className="text-gray-400 hover:text-gray-600">
+            <button 
+              onClick={() => setMaximized('Tasks by stream')} 
+              className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+              title="Maximize chart"
+            >
               <Maximize2 className="w-4 h-4" />
             </button>
           </div>
@@ -208,7 +216,11 @@ export default function ChartsClient({ initialTasks, streams }: Props) {
         <div className="card p-5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-semibold text-gray-700">Story points by stream</h2>
-            <button onClick={() => setMaximized('Story points by stream')} className="text-gray-400 hover:text-gray-600">
+            <button 
+              onClick={() => setMaximized('Story points by stream')} 
+              className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+              title="Maximize chart"
+            >
               <Maximize2 className="w-4 h-4" />
             </button>
           </div>
@@ -229,7 +241,11 @@ export default function ChartsClient({ initialTasks, streams }: Props) {
         <div className="card p-5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-semibold text-gray-700">Burndown (tasks remaining)</h2>
-            <button onClick={() => setMaximized('Burndown (tasks remaining)')} className="text-gray-400 hover:text-gray-600">
+            <button 
+              onClick={() => setMaximized('Burndown (tasks remaining)')} 
+              className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+              title="Maximize chart"
+            >
               <Maximize2 className="w-4 h-4" />
             </button>
           </div>
@@ -251,7 +267,11 @@ export default function ChartsClient({ initialTasks, streams }: Props) {
       <div className="card p-5">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-sm font-semibold text-gray-700">Tasks by priority &amp; status</h2>
-          <button onClick={() => setMaximized('Tasks by priority & status')} className="text-gray-400 hover:text-gray-600">
+          <button 
+            onClick={() => setMaximized('Tasks by priority & status')} 
+            className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+            title="Maximize chart"
+          >
             <Maximize2 className="w-4 h-4" />
           </button>
         </div>
