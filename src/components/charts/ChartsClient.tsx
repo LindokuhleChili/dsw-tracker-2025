@@ -65,51 +65,53 @@ export default function ChartsClient({ initialTasks, streams }: Props) {
     }
   })
 
-  // 4. Burndown simulation (weekly from project start to deadline)
+  // 4. Real burndown chart based on actual completion dates
   const totalTasks = tasks.length
-  const yAxisMax = Math.ceil(totalTasks * 1.1)
+  const totalPoints = tasks.reduce((sum, t) => sum + (t.points || 0), 0)
+  const yAxisMax = Math.ceil(totalPoints * 1.1)
   
   const projectStart = new Date('2025-03-16')
   const deadline = new Date('2025-09-30')
-  const today = new Date()
   const msPerWeek = 7 * 24 * 60 * 60 * 1000
   
   // Calculate total weeks in project
   const totalProjectWeeks = Math.ceil((deadline.getTime() - projectStart.getTime()) / msPerWeek)
-  const currentWeek = Math.floor((today.getTime() - projectStart.getTime()) / msPerWeek)
+  const currentWeek = Math.floor((Date.now() - projectStart.getTime()) / msPerWeek)
   
-  // Generate data point for EVERY week from 0 to totalProjectWeeks
-  const doneCount = tasks.filter(t => t.status === 'done').length
-  const currentRemaining = totalTasks - doneCount
-  
-  const burndown = Array.from({ length: totalProjectWeeks + 1 }, (_, weekNum) => {
-    // Ideal burndown: linear decrease from totalTasks to 0
-    const idealRemaining = Math.max(0, Math.round(totalTasks - (totalTasks / totalProjectWeeks) * weekNum))
-    
-    // Actual remaining: show current progress at current week, then project forward
-    let actualRemaining
-    if (weekNum < currentWeek) {
-      // Past weeks: interpolate from start to current
-      actualRemaining = Math.round(totalTasks - (doneCount / currentWeek) * weekNum)
-    } else if (weekNum === currentWeek) {
-      // Current week: actual remaining
-      actualRemaining = currentRemaining
-    } else {
-      // Future weeks: project current pace forward
-      actualRemaining = Math.max(0, currentRemaining - Math.round((currentRemaining / (totalProjectWeeks - currentWeek)) * (weekNum - currentWeek)))
+  // Group completed tasks by week
+  const completionsByWeek: Record<number, number> = {}
+  tasks.forEach(task => {
+    if (task.status === 'done' && task.completed_at) {
+      const completedDate = new Date(task.completed_at)
+      const weekNum = Math.floor((completedDate.getTime() - projectStart.getTime()) / msPerWeek)
+      if (weekNum >= 0 && weekNum <= totalProjectWeeks) {
+        completionsByWeek[weekNum] = (completionsByWeek[weekNum] || 0) + (task.points || 0)
+      }
     }
+  })
+  
+  // Build burndown data - only goes down when tasks actually completed
+  let remainingPoints = totalPoints
+  const burndown = Array.from({ length: totalProjectWeeks + 1 }, (_, weekNum) => {
+    // Subtract points completed in this week
+    if (weekNum > 0 && completionsByWeek[weekNum - 1]) {
+      remainingPoints -= completionsByWeek[weekNum - 1]
+    }
+    
+    // Ideal burndown: linear decrease
+    const idealRemaining = Math.max(0, Math.round(totalPoints - (totalPoints / totalProjectWeeks) * weekNum))
     
     return {
       name: weekNum === currentWeek ? `Week ${weekNum} (Now)` : `Week ${weekNum}`,
-      Remaining: Math.max(0, actualRemaining),
+      Remaining: Math.max(0, remainingPoints),
       Ideal: idealRemaining,
     }
   })
   
-  // Fallback if something goes wrong
+  // Fallback
   if (burndown.length === 0) {
     burndown.push(
-      { name: 'Week 0', Remaining: totalTasks, Ideal: totalTasks },
+      { name: 'Week 0', Remaining: totalPoints, Ideal: totalPoints },
       { name: 'End', Remaining: 0, Ideal: 0 }
     )
   }
@@ -126,8 +128,10 @@ export default function ChartsClient({ initialTasks, streams }: Props) {
     <div className="space-y-6">
       {/* Debug info */}
       <div className="text-xs text-gray-400 mb-2">
-        Total tasks loaded: {tasks.length} | 
+        Total tasks: {tasks.length} | 
+        Total points: {tasks.reduce((sum, t) => sum + (t.points || 0), 0)} | 
         Done: {tasks.filter(t => t.status === 'done').length} | 
+        Points done: {tasks.filter(t => t.status === 'done').reduce((sum, t) => sum + (t.points || 0), 0)} | 
         In Progress: {tasks.filter(t => t.status === 'in_progress').length} | 
         To Do: {tasks.filter(t => t.status === 'todo').length}
       </div>

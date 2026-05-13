@@ -31,6 +31,7 @@ export interface Task {
   month: number | null
   notes: string | null
   assigned_to: string | null
+  completed_at: string | null
   created_at: string
   updated_at: string
   stream?: Stream
