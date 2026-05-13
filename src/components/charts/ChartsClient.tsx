@@ -85,6 +85,9 @@ export default function ChartsClient({ initialTasks, streams }: Props) {
 
   return (
     <div className="space-y-6">
+      {/* Debug info */}
+      <div className="text-xs text-gray-400 mb-2">Total tasks loaded: {tasks.length}</div>
+      
       {/* Row 1 */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Overall status pie */}
